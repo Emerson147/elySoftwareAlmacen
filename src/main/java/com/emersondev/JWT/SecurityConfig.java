@@ -49,22 +49,33 @@ public class SecurityConfig {
     return config.getAuthenticationManager();
   }
 
-  @Bean
-  public CorsFilter corsFilter() {
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    CorsConfiguration config = new CorsConfiguration();
-    config.setAllowCredentials(true);
-    config.addAllowedOrigin("http://localhost:4200"); // Ajusta según tu frontend
-    config.addAllowedHeader("*");
-    config.addAllowedMethod("*");
-    source.registerCorsConfiguration("/**", config);
-    return new CorsFilter(source);
-  }
+//  @Bean
+//  public CorsFilter corsFilter() {
+//    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//    CorsConfiguration config = new CorsConfiguration();
+//    config.setAllowCredentials(true);
+//    config.addAllowedOrigin("http://localhost:4200"); // Ajusta según tu frontend
+//    config.addAllowedMethod("GET");
+//    config.addAllowedMethod("POST");
+//    config.addAllowedMethod("PUT");
+//    config.addAllowedMethod("DELETE");
+//    config.addAllowedMethod("OPTIONS");
+//    config.addAllowedHeader("*");
+//    source.registerCorsConfiguration("/**", config);
+//    return new CorsFilter(source);
+//  }
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-            .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()))
+            .cors(cors -> cors.configurationSource(request -> {
+              CorsConfiguration config = new CorsConfiguration();
+              config.setAllowCredentials(true);
+              config.addAllowedOrigin("http://localhost:4200"); // Ajusta según tu frontend
+              config.addAllowedMethod("*");
+              config.addAllowedHeader("*");
+              return config;
+            }))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/user/signup", "/user/login", "/user/forgotPassword").permitAll()

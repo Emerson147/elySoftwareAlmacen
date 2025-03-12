@@ -3,7 +3,6 @@ package com.emersondev.utils;
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +24,10 @@ public class CafeUtils {
   public static ResponseEntity<String> getResponseEntity(String responseMessage, HttpStatus httpStatus) {
     return new ResponseEntity<String>("{\"messag\":\"" + responseMessage + "\"}", httpStatus);
   }
+
+//  public static <T> ResponseEntity<T> getDataResponse(T data, HttpStatus httpStatus) {
+//    return new ResponseEntity<T>(data, httpStatus);
+//  }
 
   public static Map<String , Object> getMapFromJson(String data){
     if(!Strings.isNullOrEmpty(data))

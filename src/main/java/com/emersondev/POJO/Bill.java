@@ -8,7 +8,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 @NamedQuery(name = "Bill.getAllBills" , query = "select b from bill b order by b.id desc")
-@NamedQuery(name = "Bill.getBillByUserName" , query = "select b from bill b where b.createdBy=:username order by b.id desc")
+@NamedQuery(name = "Bill.getBillsByUserName" , query = "select b from bill b where b.createdBy=:username order by b.id desc")
 
 @Data
 @NoArgsConstructor

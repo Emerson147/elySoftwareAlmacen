@@ -109,16 +109,13 @@ public class BillServiceImpl implements BillService {
   }
 
   private void addTableHeader(PdfPTable table) {
-    log.info("Inside addTableHeader");
-    Stream.of("Name", "Category", "Quantity", "Price", "Sub Total")
-            .forEach(columnTitle -> {
+    Stream.of("Producto", "Categoría", "Cantidad", "P. Unitario", "Subtotal")
+            .forEach(headerTitle -> {
               PdfPCell header = new PdfPCell();
-              header.setBackgroundColor(BaseColor.LIGHT_GRAY);
-              header.setBorderWidth(2);
-              header.setPhrase(new Phrase(columnTitle));
-              header.setBackgroundColor(BaseColor.YELLOW);
+              header.setBackgroundColor(new BaseColor(44, 62, 80)); // Gris oscuro
+              header.setPhrase(new Phrase(headerTitle, getFont("HeaderTable")));
+              header.setPadding(8);
               header.setHorizontalAlignment(Element.ALIGN_CENTER);
-              header.setVerticalAlignment(Element.ALIGN_CENTER);
               table.addCell(header);
             });
   }
@@ -163,17 +160,94 @@ public class BillServiceImpl implements BillService {
 
   private Font getFont(String type) {
     log.info("Inside getFont");
+
+    BaseColor primaryColor = new BaseColor(63, 169, 219); // Blue
     switch (type) {
       case "Header":
-        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLDOBLIQUE, 18, BaseColor.BLACK);
-        headerFont.setStyle(Font.BOLD);
-        return headerFont;
+        return FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, primaryColor);
+      case "HeaderTable":
+        return FontFactory.getFont(FontFactory.HELVETICA, 12, BaseColor.WHITE);
       case "Data":
-        Font dareFont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 11, BaseColor.BLACK);
-        dareFont.setStyle(Font.BOLD);
-        return dareFont;
+        return FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.DARK_GRAY);
+      case "TotalLabel":
+        return FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.DARK_GRAY);
+      case "TotalValue":
+        return FontFactory.getFont(FontFactory.HELVETICA, 10, new BaseColor(46, 204, 113)); // Grenn
+      case "Footer":
+        Font font = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, BaseColor.GRAY);
+        font.setColor(BaseColor.GRAY);
+        return font;
       default:
-        return new Font();
+        return new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
     }
   }
+
+  @Override
+  public ResponseEntity<List<Bill>> getBills() {
+    List<Bill> list = new ArrayList<>();
+    if (jwtFilter.isAdmin()) {
+      list = billDao.getAllBills();
+    } else {
+      list = billDao.getBillsByUserName(jwtFilter.getCurrentUsername());
+    }
+    return new ResponseEntity<>(list, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<byte[]> getPdf(Map<String, Object> requestMap) {
+    log.info("Inside getPdf : requestMap {}", requestMap);
+
+    try {
+      byte[] byteArray = new byte[0];
+      if (!requestMap.containsKey("uuid") && validateResquestMap(requestMap)) {
+        return new ResponseEntity<>(byteArray, HttpStatus.BAD_REQUEST);
+      }
+      String filepath = CafeConstants.STORE_LOCATION + "\\" + (String) requestMap.get("uuid") + ".pdf";
+
+      if (CafeUtils.isFileExist(filepath)) {
+        byteArray = getByteArray(filepath);
+        return new ResponseEntity<>(byteArray, HttpStatus.OK);
+      } else {
+        requestMap.put("isGenerate", false);
+        generateReport(requestMap);
+        byteArray = getByteArray(filepath);
+        return new ResponseEntity<>(byteArray, HttpStatus.OK);
+      }
+
+    } catch (Exception ex) {
+        ex.printStackTrace();
+    }
+    return null;
+  }
+
+
+  private byte[] getByteArray(String filepath) throws Exception {
+    File initalFile = new File(filepath);
+    InputStream targetSteam = new FileInputStream(initalFile);
+    byte[] byteArray = IOUtils.toByteArray(targetSteam);
+    targetSteam.close();
+    return byteArray;
+  }
+
+
+  @Override
+  public ResponseEntity<String> deletePdf(Integer id) {
+    try {
+      if (jwtFilter.isAdmin()) {
+        Optional optional = billDao.findById(id);
+        if (!optional.isEmpty()) {
+          billDao.deleteById(id);
+
+          return CafeUtils.getResponseEntity("Bill is deleted successfully", HttpStatus.OK);
+        }
+        return CafeUtils.getResponseEntity("Bill id doesn't exist", HttpStatus.OK);
+      } else {
+        return CafeUtils.getResponseEntity(CafeConstants.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
+      }
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
 }

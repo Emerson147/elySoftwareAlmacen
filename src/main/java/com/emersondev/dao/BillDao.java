@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface BillDao extends JpaRepository<Bill, Integer> {
 
-//  List<Bill> getAllBills();
-//
-//  List<Bill> getBillsByUserName(@Param("username") String category);
+  List<Bill> getAllBills();
+
+  List<Bill> getBillsByUserName(@Param("username") String category);
 }
