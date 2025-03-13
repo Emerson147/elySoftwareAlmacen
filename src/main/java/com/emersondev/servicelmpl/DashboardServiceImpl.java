@@ -3,6 +3,7 @@ package com.emersondev.servicelmpl;
 import com.emersondev.dao.BillDao;
 import com.emersondev.dao.CategoryDao;
 import com.emersondev.dao.ProductDao;
+import com.emersondev.dao.WarehouseDao;
 import com.emersondev.service.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,8 @@ public class DashboardServiceImpl implements DashboardService {
 
   @Autowired
   BillDao billDao;
+  @Autowired
+  private WarehouseDao warehouseDao;
 
   @Override
   public ResponseEntity<Map<String, Object>> getCOunt() {
@@ -33,6 +36,7 @@ public class DashboardServiceImpl implements DashboardService {
     map.put("category", categoryDao.count());
     map.put("product", productDao.count());
     map.put("bill", billDao.count());
+    map.put("warehouse", warehouseDao.count());
 
     return new ResponseEntity<>(map, HttpStatus.OK);
   }

@@ -8,17 +8,11 @@ import org.hibernate.annotations.DynamicUpdate;
 import java.io.Serializable;
 
 @NamedQuery(name = "Product.getAllProduct", query = "select new com.emersondev.wrapper.ProductWrapper(u.id, u.codigo, u.name , u.description , u.price, u.status ,u.category.id, u.category.name, u.serie, u.stock, u.warehouse.id, u.warehouse.name ) from Product u")
-
 @NamedQuery(name = "Product.updateProductStatus", query = "update Product u set u.status=:status where u.id=:id")
-
-@NamedQuery(name = "Product.getByCategory", query = "select new com.emersondev.wrapper.ProductWrapper(u.id , u.name , u.description , u.price , u.category.id , u.category.name , u.status) from Product u where u.category.id=:id and u.status='true'" )
-
-@NamedQuery(name = "Product.getProductById", query = "select new com.emersondev.wrapper.ProductWrapper(u.id , u.name , u.description , u.price) from Product u where u.id=:id")
-
+@NamedQuery(name = "Product.getByCategory", query = "select new com.emersondev.wrapper.ProductWrapper(u.id, u.codigo, u.name , u.description , u.price, u.status ,u.category.id, u.category.name, u.serie, u.stock, u.warehouse.id, u.warehouse.name) from Product u where u.category.id=:id and u.status='true'" )
+@NamedQuery(name = "Product.getProductById", query = "select new com.emersondev.wrapper.ProductWrapper(u.id, u.codigo, u.name , u.description , u.price, u.status ,u.category.id, u.category.name, u.serie, u.stock, u.warehouse.id, u.warehouse.name) from Product u where u.id=:id")
 @NamedQuery(name = "Product.findByCode", query = "select new com.emersondev.wrapper.ProductWrapper(u.id , u.codigo , u.name , u.description , u.price , u.serie , u.stock , u.warehouse.id , u.warehouse.name) from Product u where u.codigo=:codigo")
-
 @NamedQuery(name = "Product.findBySerie", query = "select new com.emersondev.wrapper.ProductWrapper(u.id , u.codigo , u.name , u.description , u.price, u.status, u.category.id, u.category.name , u.serie , u.stock , u.warehouse.id , u.warehouse.name) from Product u where u.serie=:serie")
-
 @NamedQuery(name = "Product.findByWarehouse", query = "select new com.emersondev.wrapper.ProductWrapper(u.id , u.codigo , u.name , u.description , u.price , u.status , u.category.id , u.category.name , u.serie , u.stock , u.warehouse.id , u.warehouse.name) from Product u where u.warehouse.id=:id")
 
 @Data

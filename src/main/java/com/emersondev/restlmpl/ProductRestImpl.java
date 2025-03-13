@@ -90,4 +90,34 @@ public class ProductRestImpl implements ProductRest {
     return new ResponseEntity<>(new ProductWrapper(), HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
+  @Override
+  public ResponseEntity<ProductWrapper> getProductByCode(String codigo) {
+    try {
+      return productService.getProductByCode(codigo);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return new ResponseEntity<>(new ProductWrapper(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @Override
+  public ResponseEntity<ProductWrapper> getProductBySerie(String serie) {
+    try {
+      return productService.getProductBySerie(serie);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return new ResponseEntity<>(new ProductWrapper(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @Override
+  public ResponseEntity<List<ProductWrapper>> getProductByWarehouse(Integer id) {
+    try {
+      return productService.getProductByWarehouse(id);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
 }

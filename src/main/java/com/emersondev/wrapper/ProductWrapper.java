@@ -45,13 +45,6 @@ public class ProductWrapper {
     this.status = status;
   }
 
-  public ProductWrapper(Integer id, String name, String description, Integer price) {
-    this.id = id;
-    this.name = name;
-    this.description = description;
-    this.price = price;
-  }
-
   // Constructor para getProductById
   public ProductWrapper(Integer id, String codigo, String name, String description, Integer price,
                         String serie, Integer stock, Integer warehouseId, String warehouseName) {

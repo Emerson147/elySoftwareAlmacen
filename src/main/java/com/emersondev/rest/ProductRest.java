@@ -31,4 +31,14 @@ public interface ProductRest {
   @GetMapping(path = "getProductById/{id}")
   public ResponseEntity<ProductWrapper> getProductById(@PathVariable Integer id);
 
+  @GetMapping(path = "getProductByCode/{codigo}")
+  public ResponseEntity<ProductWrapper> getProductByCode(@PathVariable String codigo);
+
+  @GetMapping(path = "getProductBySerie/{serie}")
+  public ResponseEntity<ProductWrapper> getProductBySerie(@PathVariable String serie);
+
+  @GetMapping(path = "getProductByWarehouse/{id}")
+  public ResponseEntity<List<ProductWrapper>> getProductByWarehouse(@PathVariable Integer id);
+
+
 }

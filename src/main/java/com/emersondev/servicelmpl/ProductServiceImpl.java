@@ -3,6 +3,7 @@ package com.emersondev.servicelmpl;
 import com.emersondev.JWT.JwtFilter;
 import com.emersondev.POJO.Category;
 import com.emersondev.POJO.Product;
+import com.emersondev.POJO.Warehouse;
 import com.emersondev.contansts.CafeConstants;
 import com.emersondev.dao.ProductDao;
 import com.emersondev.service.ProductService;
@@ -11,6 +12,7 @@ import com.emersondev.wrapper.ProductWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -55,10 +57,16 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private boolean validateProductMap(Map<String, String> requestMap, boolean validateId) {
-    if (!requestMap.containsKey("name") || requestMap.get("name").trim().isEmpty()) {
+    if (validateId && (!requestMap.containsKey("id") || requestMap.get("id").trim().isEmpty())) {
       return false;
     }
-    if (validateId && (!requestMap.containsKey("id") || requestMap.get("id").trim().isEmpty())) {
+    if (!requestMap.containsKey("name") || requestMap.get("name").trim().isEmpty() ||
+            !requestMap.containsKey("codigo") || requestMap.get("codigo").trim().isEmpty() ||
+            !requestMap.containsKey("categoryId") || requestMap.get("categoryId").trim().isEmpty() ||
+            !requestMap.containsKey("price") || requestMap.get("price").trim().isEmpty() ||
+            !requestMap.containsKey("serie") || requestMap.get("serie").trim().isEmpty() ||
+            !requestMap.containsKey("stock") || requestMap.get("stock").trim().isEmpty() ||
+            !requestMap.containsKey("warehouseId") || requestMap.get("warehouseId").trim().isEmpty()) {
       return false;
     }
     return true;
@@ -67,13 +75,20 @@ public class ProductServiceImpl implements ProductService {
   private Product getProductFromMap(Map<String, String> requestMap, boolean isAdd) {
     Product product = new Product();
     Category category = new Category();
+    Warehouse warehouse = new Warehouse();
 
     try {
       category.setId(Integer.parseInt(requestMap.get("categoryId")));
-      product.setCategory(category);
+      warehouse.setId(Integer.parseInt(requestMap.get("warehouseId")));
+
+      product.setCodigo(requestMap.get("codigo"));
       product.setName(requestMap.get("name"));
       product.setDescription(requestMap.get("description"));
       product.setPrice(Integer.parseInt(requestMap.get("price")));
+      product.setCategory(category);
+      product.setSerie(requestMap.get("serie"));
+      product.setStock(Integer.parseInt(requestMap.get("stock")));
+      product.setWarehouse(warehouse);
 
       if (isAdd) {
         product.setId(Integer.parseInt(requestMap.get("id")));
@@ -159,7 +174,7 @@ public class ProductServiceImpl implements ProductService {
       }
 
     } catch (Exception ex) {
-        ex.printStackTrace();
+      ex.printStackTrace();
     }
     return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
   }
@@ -183,21 +198,93 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public ResponseEntity<List<ProductWrapper>> getByCategory(Integer id) {
+    logger.info("Intentando obtener productos por categoría ID: {}", id);
     try {
-      return new ResponseEntity<>(productDao.getByCategory(id), HttpStatus.OK);
+      List<ProductWrapper> products = productDao.getByCategory(id);
+      HttpHeaders headers = new HttpHeaders();
+
+      if (products.isEmpty()) {
+        logger.warn("No se encontraron productos para la categoría ID: {}", id);
+        return new ResponseEntity<>(products,headers, HttpStatus.NOT_FOUND);
+      }
+      logger.info("Se encontraron {} productos para la categoría ID: {}", products.size(), id);
+      return new ResponseEntity<>(products, HttpStatus.OK);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Error al obtener productos por categoría ID {}: {}", id, ex.getMessage(), ex);
+      return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+
   }
 
   @Override
   public ResponseEntity<ProductWrapper> getProductById(Integer id) {
+    logger.info("Intentando obtener producto por ID: {}", id);
     try {
-      return new ResponseEntity<>(productDao.getProductById(id), HttpStatus.OK);
+      ProductWrapper product = productDao.getProductById(id);
+      if (product != null) {
+        logger.info("Producto encontrado con ID: {}", id);
+        return new ResponseEntity<>(product, HttpStatus.OK);
+      } else {
+        logger.warn("No se encontró producto con ID: {}", id);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Error al obtener producto por ID {}: {}", id, ex.getMessage(), ex);
+      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return new ResponseEntity<>(new ProductWrapper(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @Override
+  public ResponseEntity<ProductWrapper> getProductByCode(String codigo) {
+    logger.info("Intentando obtener producto por código: {}", codigo);
+    try {
+      ProductWrapper product = productDao.findByCode(codigo);
+      if (product != null) {
+        logger.info("Producto encontrado con código: {}", codigo);
+        return new ResponseEntity<>(product, HttpStatus.OK);
+      } else {
+        logger.warn("No se encontró producto con código: {}", codigo);
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+      }
+
+    } catch (Exception ex) {
+      logger.error("Error al obtener producto por código {}: {}", codigo, ex.getMessage(), ex);
+      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
+  public ResponseEntity<ProductWrapper> getProductBySerie(String serie) {
+    logger.warn("Intentando obtener producto por serie: {}", serie);
+    try {
+      ProductWrapper product = productDao.findBySerie(serie);
+      if (product != null) {
+        logger.info("Producto encontrado con serie: {}", serie);
+        return new ResponseEntity<>(product, HttpStatus.OK);
+      } else {
+        logger.warn("No se encontró producto con serie: {}", serie);
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+      }
+    } catch (Exception ex) {
+      logger.error("Error al obtener producto por serie {}: {}", serie, ex.getMessage(), ex);
+      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
+  public ResponseEntity<List<ProductWrapper>> getProductByWarehouse(Integer id) {
+    try {
+      List<ProductWrapper> products = productDao.findByWarehouse(id);
+
+      if (products.isEmpty()) {
+        logger.warn("No se encontraron productos para el almacén ID: {}", id);
+        return new ResponseEntity<>(products, HttpStatus.NOT_FOUND);
+      }
+      logger.info("Se encontraron {} productos para el almacén ID: {}", products.size(), id);
+      return new ResponseEntity<>(products, HttpStatus.OK);
+    } catch (Exception ex) {
+      logger.error("Error al obtener productos por almacén ID {}: {}", id, ex.getMessage(), ex);
+      return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
