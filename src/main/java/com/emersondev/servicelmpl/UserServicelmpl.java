@@ -58,31 +58,26 @@ public class UserServicelmpl implements UserService {
     log.info("Inside signup {}", requestMap);
     try {
       if (validateSignUpMap(requestMap)) {
-        //System.out.println("inside validaSignUpMap");
         User user = userDao.findByEmailId(requestMap.get("email"));
         if (Objects.isNull(user)) {
           userDao.save(getUserFromMap(requestMap));
-          //System.out.println("Successfully  Registered.");
           return getResponseEntity("Successfully  Registered.", HttpStatus.OK);
         } else {
-          //System.out.println("Email already exits.");
           return getResponseEntity("Email already exits.", HttpStatus.BAD_REQUEST);
         }
       } else {
-        //System.out.println(CafeConstants.INVALID_DATA);
         return getResponseEntity(CafeConstants.INVALID_DATA, HttpStatus.BAD_REQUEST);
       }
     } catch (Exception ex) {
       ex.printStackTrace();
     }
-    //System.out.println(CafeConstants.SOMETHING_WENT_WRONG);
     return getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   /**Este método valida el mapa de solicitud de registro. **/
   private boolean validateSignUpMap(Map<String, String> requestMap) {
     return requestMap.containsKey("name") && requestMap.containsKey("contactNumber") && requestMap.containsKey("email")
-            && requestMap.containsKey("password");
+            && requestMap.containsKey("password") && requestMap.containsKey("role");
   }
 
   /** Este método crea un objeto de usuario a partir del mapa de solicitud. **/
@@ -93,8 +88,8 @@ public class UserServicelmpl implements UserService {
     user.setEmail(requestMap.get("email"));
     //Hashea el password antes de guardarlo en la base de datos
     user.setPassword(passwordEncoder.encode(requestMap.get("password")));
-    user.setStatus("true");
-    user.setRole("user");
+    user.setStatus(requestMap.get("status"));
+    user.setRole(requestMap.get("role"));
 
     return user;
 

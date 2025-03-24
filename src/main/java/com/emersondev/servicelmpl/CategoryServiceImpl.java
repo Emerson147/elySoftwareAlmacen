@@ -62,6 +62,7 @@ public class CategoryServiceImpl implements CategoryService {
       category.setId(Integer.parseInt(requestMap.get("id")));
     }
     category.setName(requestMap.get("name"));
+    category.setDescription(requestMap.get("description"));
     return category;
   }
 
