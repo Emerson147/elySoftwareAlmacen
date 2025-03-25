@@ -5,6 +5,7 @@ import com.emersondev.rest.UserRest;
 import com.emersondev.service.UserService;
 import com.emersondev.utils.CafeUtils;
 import com.emersondev.wrapper.UserWrapper;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,9 +62,19 @@ public class UserRestlmpl implements UserRest {
   }
 
   @Override
-  public ResponseEntity<String> update(Map<String, String> requestMap) {
+  public ResponseEntity<String> updateUser(Map<String, String> requestMap) {
     try {
-      return userService.update(requestMap);
+      return userService.updateUser(requestMap);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @Override
+  public ResponseEntity<String> updateStatus(Map<String, String> requestMap) {
+    try {
+      return userService.updateStatus(requestMap);
     } catch (Exception ex) {
       ex.printStackTrace();
     }

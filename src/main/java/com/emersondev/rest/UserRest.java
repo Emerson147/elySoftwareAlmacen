@@ -22,8 +22,11 @@ public interface UserRest {
   @GetMapping(path = "/get")
   public ResponseEntity<List<UserWrapper>> getAllUsers();
 
-  @PostMapping(path = "/update")
-  public ResponseEntity<String> update(@RequestBody(required = true) Map<String, String> requestMap);
+  @PostMapping(path = "/updateUser")
+  public ResponseEntity<String> updateUser(@Validated @RequestBody Map<String, String> requestMap);
+
+  @PostMapping(path = "/update/status")
+  public ResponseEntity<String> updateStatus(@RequestBody(required = true) Map<String, String> requestMap);
 
   @GetMapping(path = "/checkToken")
   public ResponseEntity<String> checkToken();

@@ -46,14 +46,17 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   private boolean validateCategoryMap(Map<String, String> requestMap, boolean validateId) {
-    if (requestMap.containsKey("name")) {
-      if (requestMap.containsKey("id") && validateId) {
-        return true;
-      } else if (!validateId) {
-        return true;
+    try {
+      if (validateId && (!requestMap.containsKey("id") || requestMap.get("id").trim().isEmpty())) {
+        return false;
       }
+      return requestMap.containsKey("name")
+              && !requestMap.get("name").trim().isEmpty()
+              && requestMap.containsKey("description");
+    } catch (Exception e) {
+      log.error("Error validating category map: {}", e.getMessage());
+      return false;
     }
-    return false;
   }
 
   private Category getCategoryFromMap(Map<String, String> requestMap, boolean isAdd) {
@@ -84,34 +87,55 @@ public class CategoryServiceImpl implements CategoryService {
 
   @Override
   public ResponseEntity<String> updateCategory(Map<String, String> requestMap) {
+    log.info("Attempting to update category with data: {}", requestMap);
     try {
-      // verificacion temprana de autorizacion
+      // Authorization check
       if (!jwtFilter.isAdmin()) {
+        log.warn("Unauthorized update attempt");
         return CafeUtils.getResponseEntity(CafeConstants.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
       }
 
-      //Validacion separada para mejor logabilidad
+      // Input validation
+      if (requestMap == null || !requestMap.containsKey("id") || !requestMap.containsKey("name")) {
+        log.warn("Missing required fields in request");
+        return CafeUtils.getResponseEntity("Missing required fields", HttpStatus.BAD_REQUEST);
+      }
+
+      // Category map validation
       if (!validateCategoryMap(requestMap, true)) {
+        log.warn("Invalid category data: {}", requestMap);
         return CafeUtils.getResponseEntity(CafeConstants.INVALID_DATA, HttpStatus.BAD_REQUEST);
       }
 
-      //Manejo segura de conversion numerica
+      // Safe ID parsing
       int categoryId;
       try {
         categoryId = Integer.parseInt(requestMap.get("id"));
       } catch (NumberFormatException e) {
+        log.error("Invalid category ID format: {}", requestMap.get("id"));
         return CafeUtils.getResponseEntity("Invalid category ID format", HttpStatus.BAD_REQUEST);
       }
 
-      //Uso correcto de Optional y manejo de estados HTTP apropiado
+      // Category update with proper error handling
       return categoryDao.findById(categoryId)
               .map(existingCategory -> {
-                categoryDao.save(getCategoryFromMap(requestMap, true));
-                return CafeUtils.getResponseEntity("Category updated successfully", HttpStatus.OK);
+                try {
+                  Category updatedCategory = getCategoryFromMap(requestMap, true);
+                  categoryDao.save(updatedCategory);
+                  log.info("Category successfully updated: {}", categoryId);
+                  return CafeUtils.getResponseEntity("Category updated successfully", HttpStatus.OK);
+                } catch (Exception e) {
+                  log.error("Error saving category: {}", e.getMessage());
+                  return CafeUtils.getResponseEntity("Error updating category", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
               })
-              .orElseGet(() -> CafeUtils.getResponseEntity("Category not found", HttpStatus.NOT_FOUND));
+              .orElseGet(() -> {
+                log.warn("Category not found: {}", categoryId);
+                return CafeUtils.getResponseEntity("Category not found", HttpStatus.NOT_FOUND);
+              });
+
     } catch (Exception ex) {
-      log.error("Error updating category", ex); // Manejo de logging
+      log.error("Unexpected error updating category", ex);
       return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

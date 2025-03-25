@@ -13,7 +13,7 @@ import java.io.Serializable;
 
 @NamedQuery(name = "User.findByEmailId", query = "select u from User u where u.email=:email")
 
-@NamedQuery(name = "User.getAllUsers", query = "select new com.emersondev.wrapper.UserWrapper(u.id, u.status, u.contactnumber, u.email, u.name) from User u where u.role='user'")
+@NamedQuery(name = "User.getAllUsers", query = "select new com.emersondev.wrapper.UserWrapper(u.id, u.status, u.contactNumber, u.email, u.name) from User u where u.role='user'")
 
 @NamedQuery(name = "User.getAllAdmin", query = "select u.email from User u where u.role='admin'")
 
@@ -40,7 +40,7 @@ public class User implements Serializable {
   private String name;
 
   @Column(name = "contactnumber")
-  private String contactnumber;
+  private String contactNumber;
 
   @Column(name = "email")
   private String email;

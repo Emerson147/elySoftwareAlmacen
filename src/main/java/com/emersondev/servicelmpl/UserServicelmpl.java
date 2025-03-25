@@ -84,7 +84,7 @@ public class UserServicelmpl implements UserService {
   private User getUserFromMap(Map<String, String> requestMap) {
     User user = new User();
     user.setName(requestMap.get("name"));
-    user.setContactnumber(requestMap.get("contactNumber"));
+    user.setContactNumber(requestMap.get("contactNumber"));
     user.setEmail(requestMap.get("email"));
     //Hashea el password antes de guardarlo en la base de datos
     user.setPassword(passwordEncoder.encode(requestMap.get("password")));
@@ -146,7 +146,56 @@ public class UserServicelmpl implements UserService {
   }
 
   @Override
-  public ResponseEntity<String> update(Map<String, String> requestMap) {
+  public ResponseEntity<String> updateUser(Map<String, String> requestMap) {
+    try {
+      if (!jwtFilter.isAdmin()) {
+        return getResponseEntity(CafeConstants.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
+      }
+
+      if (!validateUpdateUserMap(requestMap)) {
+        return getResponseEntity("Invalid Data", HttpStatus.BAD_REQUEST);
+      }
+
+      //Parse ID properly
+      int userId;
+      try {
+        userId = Integer.parseInt(requestMap.get("id"));
+      } catch (NumberFormatException ex) {
+        return getResponseEntity("Invalid User ID", HttpStatus.BAD_REQUEST);
+      }
+
+      Optional<User> optional = userDao.findById(userId);
+      if (optional.isPresent()) {
+        User user = optional.get();
+        updateUserFields(user, requestMap);
+        userDao.save(user);
+
+        return getResponseEntity("User Updated Successfully", HttpStatus.OK);
+      } else {
+        return getResponseEntity("User doesn't exist", HttpStatus.NOT_FOUND);
+      }
+
+    } catch (Exception ex) {
+      log.error("Update user error: ", ex);
+      return getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  private boolean validateUpdateUserMap(Map<String, String> requestMap) {
+    return requestMap.containsKey("id") && requestMap.containsKey("name") && requestMap.containsKey("contactNumber")
+            && requestMap.containsKey("email") && requestMap.containsKey("role") && requestMap.containsKey("status");
+  }
+
+  private void updateUserFields(User user, Map<String, String> requestMap) {
+    user.setName(requestMap.get("name"));
+    user.setContactNumber(requestMap.get("contactNumber"));
+    user.setEmail(requestMap.get("email"));
+    user.setRole(requestMap.get("role"));
+    user.setStatus(requestMap.get("status"));
+  }
+
+  @Override
+  public ResponseEntity<String> updateStatus(Map<String, String> requestMap) {
     try {
       if (jwtFilter.isAdmin()) {
         Optional<User> optional = userDao.findById(Integer.parseInt(requestMap.get("id")));

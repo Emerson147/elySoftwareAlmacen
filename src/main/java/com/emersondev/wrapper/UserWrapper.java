@@ -13,14 +13,14 @@ public class UserWrapper {
 
   private String email;
 
-  private String contacNumber;
+  private String contactnumber;
 
   private String status;
 
-  public UserWrapper(Integer id, String status, String contacNumber, String email, String name) {
+  public UserWrapper(Integer id, String status, String contactnumber, String email, String name) {
     this.id = id;
     this.status = status;
-    this.contacNumber = contacNumber;
+    this.contactnumber = contactnumber;
     this.email = email;
     this.name = name;
   }
