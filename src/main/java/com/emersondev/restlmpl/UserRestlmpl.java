@@ -82,6 +82,16 @@ public class UserRestlmpl implements UserRest {
   }
 
   @Override
+  public ResponseEntity<String> deleteUser(String id) {
+    try {
+      return userService.deleteUser(id);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.UNAUTHORIZED);
+  }
+
+  @Override
   public ResponseEntity<String> checkToken() {
     try {
       return userService.checkToken();

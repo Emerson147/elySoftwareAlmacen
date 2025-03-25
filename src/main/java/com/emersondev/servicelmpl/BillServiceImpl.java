@@ -140,7 +140,7 @@ public class BillServiceImpl implements BillService {
       bill.setEmail((String) requestMap.get("email"));
       bill.setContactNumber((String) requestMap.get("contactNumber"));
       bill.setPaymentMethod((String) requestMap.get("paymentMethod"));
-      bill.setTotal(Integer.parseInt((String) requestMap.get("totalAmount")));
+      bill.setTotal(Integer.valueOf(Integer.parseInt((String) requestMap.get("totalAmount"))));
       bill.setProductDetails((String) requestMap.get("productDetails"));
       bill.setCreatedBy(jwtFilter.getCurrentUsername());
       billDao.save(bill);
@@ -208,7 +208,7 @@ public class BillServiceImpl implements BillService {
         byteArray = getByteArray(filepath);
         return new ResponseEntity<>(byteArray, HttpStatus.OK);
       } else {
-        requestMap.put("isGenerate", false);
+        requestMap.put("isGenerate", Optional.of(false));
         generateReport(requestMap);
         byteArray = getByteArray(filepath);
         return new ResponseEntity<>(byteArray, HttpStatus.OK);

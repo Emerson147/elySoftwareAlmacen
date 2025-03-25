@@ -1,9 +1,6 @@
 package com.emersondev.servicelmpl;
 
-import com.emersondev.dao.BillDao;
-import com.emersondev.dao.CategoryDao;
-import com.emersondev.dao.ProductDao;
-import com.emersondev.dao.WarehouseDao;
+import com.emersondev.dao.*;
 import com.emersondev.service.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class DashboardServiceImpl implements DashboardService {
@@ -26,6 +24,8 @@ public class DashboardServiceImpl implements DashboardService {
   BillDao billDao;
   @Autowired
   private WarehouseDao warehouseDao;
+  @Autowired
+  private UserDao userDao;
 
   @Override
   public ResponseEntity<Map<String, Object>> getCOunt() {
@@ -33,10 +33,11 @@ public class DashboardServiceImpl implements DashboardService {
 
     Map<String, Object> map = new HashMap<>();
 
-    map.put("category", categoryDao.count());
-    map.put("product", productDao.count());
-    map.put("bill", billDao.count());
-    map.put("warehouse", warehouseDao.count());
+    map.put("category", Optional.of(categoryDao.count()));
+    map.put("product", Optional.of(productDao.count()));
+    map.put("bill", Optional.of(billDao.count()));
+    map.put("warehouse", Optional.of(warehouseDao.count()));
+    map.put("users", Optional.of(userDao.count()));
 
     return new ResponseEntity<>(map, HttpStatus.OK);
   }

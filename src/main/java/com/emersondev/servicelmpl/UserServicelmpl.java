@@ -164,7 +164,7 @@ public class UserServicelmpl implements UserService {
         return getResponseEntity("Invalid User ID", HttpStatus.BAD_REQUEST);
       }
 
-      Optional<User> optional = userDao.findById(userId);
+      Optional<User> optional = userDao.findById(Integer.valueOf(userId));
       if (optional.isPresent()) {
         User user = optional.get();
         updateUserFields(user, requestMap);
@@ -198,10 +198,10 @@ public class UserServicelmpl implements UserService {
   public ResponseEntity<String> updateStatus(Map<String, String> requestMap) {
     try {
       if (jwtFilter.isAdmin()) {
-        Optional<User> optional = userDao.findById(Integer.parseInt(requestMap.get("id")));
+        Optional<User> optional = userDao.findById(Integer.valueOf(Integer.parseInt(requestMap.get("id"))));
         if (!optional.isEmpty()) {
 
-          userDao.updateStatus(requestMap.get("status"), Integer.parseInt(requestMap.get("id")));
+          userDao.updateStatus(requestMap.get("status"), Integer.valueOf(Integer.parseInt(requestMap.get("id"))));
           sendMailToAllAdmin(requestMap.get("status"), optional.get().getEmail(), userDao.getAllAdmin());
           return getResponseEntity("User Status is updated succesfully", HttpStatus.OK);
         } else {
@@ -270,6 +270,29 @@ public class UserServicelmpl implements UserService {
         emailUtil.forgetMail(user.getEmail(), "Credentials by Cafe Management System", user.getPassword());
         return getResponseEntity("Check your email for credentials", HttpStatus.OK);
       }
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @Override
+  public ResponseEntity<String> deleteUser(String id) {
+    try {
+      log.info("Inside delete user with id: {}", id);
+      if (jwtFilter.isAdmin()) {
+        log.info("User is not admin");
+        User user = userDao.findById(Integer.valueOf(id)).orElse(null);
+        if (user != null) {
+          log.info("User found, proceeding with deletion: {}", user);
+          userDao.deleteById(Integer.valueOf(id));
+          return getResponseEntity("User deleted successfully", HttpStatus.OK);
+        } else {
+          log.warn("User not found with id: {}", id);
+          return getResponseEntity("User not found", HttpStatus.NOT_FOUND);
+        }
+      }
+      return getResponseEntity(CafeConstants.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
     } catch (Exception ex) {
       ex.printStackTrace();
     }
